@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Python Quiz Game{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Add Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Add favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+  {% block extra_css %}{% endblock %}
+  <style>
+    :root {
+      --primary-color: #5151E5;
+      --secondary-color: #72EDF2;
+      --accent-color: #FF6B6B;
+      --text-color: #333;
+      --text-secondary: #666;
+      --bg-color: #f5f5f5;
+      --card-bg: #fff;
+      --card-bg-accent: #f9f9f9;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --border-color: #ddd;
+      --success-color: #4CAF50;
+      --danger-color: #f44336;
+      --warning-color: #ff9800;
+      --transition: all 0.3s ease;
+      
+      /* Dark theme colors with alpha */
+      --primary-color-20: rgba(81, 81, 229, 0.2);
+      --primary-color-10: rgba(81, 81, 229, 0.1);
+      --accent-color-20: rgba(255, 107, 107, 0.2);
+      --accent-color-10: rgba(255, 107, 107, 0.1);
+      
+      /* Form specific colors */
+      --input-bg: #fff;
+      
+      /* Alert colors with background and text variants */
+      --success-bg: rgba(76, 175, 80, 0.1);
+      --success-text: #4CAF50;
+      --success-border: #4CAF50;
+      --error-bg: rgba(244, 67, 54, 0.1);
+      --error-text: #f44336;
+      --error-border: #f44336;
+    }
+
+    [data-theme="dark"] {
+      --primary-color: #6A6AFF;
+      --secondary-color: #72EDF2;
+      --accent-color: #FF8383;
+      --text-color: #f5f5f5;
+      --text-secondary: #aaa;
+      --bg-color: #121212;
+      --card-bg: #1E1E1E;
+      --card-bg-accent: #2a2a2a;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --border-color: #333;
+      --success-color: #66BB6A;
+      --danger-color: #EF5350;
+      --warning-color: #FFA726;
+      
+      /* Dark theme colors with alpha */
+      --primary-color-20: rgba(106, 106, 255, 0.2);
+      --primary-color-10: rgba(106, 106, 255, 0.1);
+      --accent-color-20: rgba(255, 131, 131, 0.2);
+      --accent-color-10: rgba(255, 131, 131, 0.1);
+      
+      /* Form specific colors */
+      --input-bg: #2a2a2a;
+      
+      /* Alert colors with background and text variants */
+      --success-bg: rgba(102, 187, 106, 0.1);
+      --success-text: #66BB6A;
+      --success-border: #66BB6A;
+      --error-bg: rgba(239, 83, 80, 0.1);
+      --error-text: #EF5350;
+      --error-border: #EF5350;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Poppins', sans-serif;
+      transition: var(--transition);
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      box-shadow: 0 8px 30px var(--shadow-color);
+      border-radius: 12px;
+      transition: var(--transition);
+    }
+
+    .theme-toggle,
+    .sound-toggle {
+      position: fixed;
+      z-index: 1000;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px var(--shadow-color);
+      transition: var(--transition);
+    }
+    
+    .theme-toggle {
+      top: 20px;
+      right: 20px;
+    }
+    
+    .sound-toggle {
+      top: 20px;
+      right: 80px;
+    }
+
+    .theme-toggle:hover,
+    .sound-toggle:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px var(--shadow-color);
+    }
+
+    .theme-icon,
+    .sound-icon {
+      font-size: 24px;
+    }
+
+    /* Common elements styling */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--primary-color);
+      transition: var(--transition);
+    }
+
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--accent-color);
+    }
+
+    .btn {
+      background-color: var(--primary-color);
+      color: white;
+      transition: var(--transition);
+    }
+
+    .btn:hover {
+      background-color: var(--accent-color);
+      transform: translateY(-3px);
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      transition: var(--transition);
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="email"]:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(81, 81, 229, 0.2);
+    }
+
+    /* Flash messages */
+    .flash-messages {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .flash {
+      color: var(--danger-color);
+      transition: var(--transition);
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body data-theme="{{ theme }}" data-sound-enabled="{{ sound_enabled }}">
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <span class="theme-icon">
+      {% if theme == 'dark' %}
+      <i class="bi bi-moon-fill"></i>
+      {% else %}
+      <i class="bi bi-sun-fill"></i>
+      {% endif %}
+    </span>
+  </button>
+  
+  <!-- Sound Toggle Button -->
+  <button class="sound-toggle" id="sound-toggle" aria-label="Toggle sound effects">
+    <span class="sound-icon">
+      {% if sound_enabled %}
+      <i class="bi bi-volume-up-fill"></i>
+      {% else %}
+      <i class="bi bi-volume-mute-fill"></i>
+      {% endif %}
+    </span>
+  </button>
+  
+  {% block content %}{% endblock %}
+
+  <!-- Base scripts that apply to all pages -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/sounds.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}About - Python Quiz Game{% endblock %}
+
+{% block extra_css %}
+<style>
+  .about-container {
+    max-width: 800px;
+    margin: 4rem auto;
+    padding: 2.5rem;
+    border-radius: 15px;
+    background: var(--card-bg);
+    box-shadow: 0 8px 30px var(--shadow-color);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .about-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  }
+  
+  .about-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+  
+  .about-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  
+  .about-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+  }
+  
+  .logo-container {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .logo-img {
+    max-width: 150px;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+  }
+  
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .feature-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: var(--card-bg-accent);
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px var(--shadow-color);
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .feature-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: var(--text-color);
+  }
+  
+  .feature-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  
+  .about-footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+  }
+  
+  .team-members {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .team-member {
+    background: var(--card-bg-accent);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    width: 180px;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    transition: transform 0.3s ease;
+  }
+
+  .team-member:hover {
+    transform: translateY(-5px);
+  }
+
+  .team-member-name {
+    font-weight: 600;
+    margin-top: 0.5rem;
+    color: var(--primary-color);
+  }
+  
+  .back-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.8rem 2rem;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    border-radius: 50px;
+    color: white;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px var(--shadow-color);
+  }
+  
+  .back-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+  }
+  
+  /* Animated background decoration */
+  .decoration {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary-color-20), var(--accent-color-20));
+    z-index: -1;
+    filter: blur(60px);
+  }
+  
+  .decoration-1 {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    right: -100px;
+    animation: float 15s infinite alternate;
+  }
+  
+  .decoration-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    left: -50px;
+    animation: float 12s infinite alternate-reverse;
+  }
+  
+  @keyframes float {
+    0% {
+      transform: translateY(0) rotate(0deg);
+    }
+    100% {
+      transform: translateY(30px) rotate(30deg);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .about-container {
+      margin: 2rem 1rem;
+      padding: 1.5rem;
+    }
+    
+    .about-title {
+      font-size: 2rem;
+    }
+    
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .team-members {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-container">
+  <div class="decoration decoration-1"></div>
+  <div class="decoration decoration-2"></div>
+  
+  <div class="about-header">
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Python Quiz Game Logo" class="logo-img">
+    </div>
+    <h1 class="about-title">About Python Quiz Game</h1>
+    <p class="about-subtitle">Test your knowledge and improve your skills with our interactive quizzes</p>
+  </div>
+  
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📚</div>
+      <h3 class="feature-title">Python Based Quizes</h3>
+      <p class="feature-description">Explore a wide range of quizzes covering Python based programming concepts, from Python basics to advanced algorithms.</p>
+    </div>
+    
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3 class="feature-title">Track Progress</h3>
+      <p class="feature-description">Monitor your performance with detailed statistics and visualizations to identify areas for improvement.</p>
+    </div>
+    
+    <div class="feature-card">
+      <div class="feature-icon">⏱️</div>
+      <h3 class="feature-title">Timed Challenges</h3>
+      <p class="feature-description">Test your knowledge under pressure with our timed quiz mode.</p>
+    </div>
+    
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <h3 class="feature-title">Leaderboard</h3>
+      <p class="feature-description">Show your knowledge and compete with others in the leaderboard.</p>
+    </div>
+  </div>
+  
+  <div class="about-footer">
+    <h3>Our Team</h3>
+    <div class="team-members">
+      <div class="team-member">
+        <div class="feature-icon">👨‍💻</div>
+        <div class="team-member-name">Sharan Suvarna</div>
+      </div>
+      <div class="team-member">
+        <div class="feature-icon">👨‍💻</div>
+        <div class="team-member-name">Vishal Tilokani</div>
+      </div>
+      <div class="team-member">
+        <div class="feature-icon">👨‍💻</div>
+        <div class="team-member-name">Vinit Yadav</div>
+      </div>
+      <div class="team-member">
+        <div class="feature-icon">👨‍💻</div>
+        <div class="team-member-name">Vedant Gadhave</div>
+      </div>
+    </div>
+    <p>Created by Batch B1</p>
+    <p>Rait</p>
+    <a href="{{ url_for('dashboard') }}" class="btn back-btn">Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

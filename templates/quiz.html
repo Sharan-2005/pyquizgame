@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+{% block title %}Quiz - Python Quiz Game{% endblock %}
+
+{% block extra_css %}
+<style>
+  .quiz-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .quiz-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  
+  .timer-container {
+    background: var(--primary-color-10);
+    border-radius: 50px;
+    padding: 0.8rem 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    margin: 2rem auto;
+    box-shadow: 0 4px 15px var(--shadow-color);
+  }
+  
+  .question-number {
+    display: inline-block;
+    background: var(--primary-color-20);
+    color: var(--primary-color);
+    border-radius: 50px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  
+  .progress-container {
+    margin: 1.5rem 0;
+    height: 6px;
+    background: var(--card-bg-accent);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    transition: width 0.3s ease;
+  }
+  
+  .question-card {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+    position: relative;
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    margin-bottom: 2rem;
+  }
+  
+  .question-card.active {
+    display: block;
+  }
+  
+  .question-text {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+    line-height: 1.5;
+  }
+  
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+  
+  .option {
+    background: var(--card-bg-accent);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+  }
+  
+  .option:hover {
+    transform: translateX(5px);
+    background: var(--primary-color-10);
+  }
+  
+  .option input[type="radio"] {
+    display: none;
+  }
+  
+  .option label {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    padding-left: 2rem;
+    position: relative;
+  }
+  
+  .option label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+  }
+  
+  .option input[type="radio"]:checked + label:after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 50%;
+  }
+  
+  /* Option selected styling */
+  .option:has(input[type="radio"]:checked) {
+    background-color: var(--primary-color-20);
+    border-left: 3px solid var(--primary-color);
+  }
+  
+  /* Navigation buttons */
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+  }
+  
+  .next-btn, .prev-btn, .submit-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .next-btn, .submit-btn {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  .prev-btn {
+    background: var(--card-bg-accent);
+    color: var(--text-color);
+  }
+  
+  .next-btn:hover, .submit-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-3px);
+  }
+  
+  .prev-btn:hover {
+    background: var(--card-bg);
+    transform: translateY(-3px);
+  }
+  
+  .cancel-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    background: var(--danger-color);
+    color: white;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+  
+  .cancel-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-3px);
+  }
+  
+  /* Question indicators */
+  .question-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--card-bg-accent);
+    transition: var(--transition);
+  }
+  
+  .indicator.active {
+    background: var(--primary-color);
+    transform: scale(1.2);
+  }
+  
+  .indicator.answered {
+    background: var(--success-color);
+  }
+  
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .pulse {
+    animation: pulse 0.7s infinite;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .quiz-title {
+      font-size: 2rem;
+    }
+    
+    .question-text {
+      font-size: 1.1rem;
+    }
+    
+    .button-group {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .next-btn, .prev-btn, .submit-btn, .cancel-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container quiz-container">
+  <div class="quiz-header">
+    <h1 class="quiz-title">Python Quiz Challenge</h1>
+    <div class="timer-container">
+      <div class="timer" id="timer">
+        <span class="timer-icon">⏱️</span>
+        <span id="time-display" data-time-limit="300">05:00</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Question indicators -->
+  <div class="question-indicators" id="question-indicators">
+    {% for i in range(questions|length) %}
+      <div class="indicator {% if i == 0 %}active{% endif %}" data-index="{{ i }}"></div>
+    {% endfor %}
+  </div>
+  
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+  </div>
+  
+  {% if questions %}
+    <form method="post" id="quiz-form">
+      <input type="hidden" name="quiz_session" value="{{ quiz_session }}">
+      {% for i, question in enumerate(questions) %}
+        <div class="question-card {% if i == 0 %}active{% endif %}" data-question-index="{{ i }}">
+          <div class="question-number">Question {{ i + 1 }} of {{ questions|length }}</div>
+          <p class="question-text">{{ question.question }}</p>
+          <input type="hidden" name="question_id" value="{{ question.id }}">
+          <div class="options">
+            {% for option in question.get_options() %}
+              <div class="option">
+                <input type="radio" 
+                       id="q{{ i }}_{{ loop.index }}" 
+                       name="answer_{{ question.id }}" 
+                       value="{{ option }}"
+                       required>
+                <label for="q{{ i }}_{{ loop.index }}">{{ option }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          
+          <div class="button-group">
+            {% if i > 0 %}
+            <button type="button" class="prev-btn" data-index="{{ i }}">
+              <span>◀ Previous</span>
+            </button>
+            {% else %}
+            <div></div>
+            {% endif %}
+            
+            {% if i < questions|length - 1 %}
+            <button type="button" class="next-btn" data-index="{{ i }}">
+              <span>Next ▶</span>
+            </button>
+            {% else %}
+            <button type="button" class="submit-btn" id="submit-quiz">
+              <span>Finish Quiz</span>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      
+      <div class="text-center">
+        <a href="{{ url_for('dashboard') }}" class="cancel-btn">Cancel Quiz</a>
+      </div>
+    </form>
+  {% else %}
+    <div class="text-center">
+      <p class="mb-3">No questions available for this quiz.</p>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Quiz navigation
+    const questionCards = document.querySelectorAll('.question-card');
+    const indicators = document.querySelectorAll('.indicator');
+    const nextButtons = document.querySelectorAll('.next-btn');
+    const prevButtons = document.querySelectorAll('.prev-btn');
+    const submitButton = document.getElementById('submit-quiz');
+    const quizForm = document.getElementById('quiz-form');
+    let currentQuestionIndex = 0;
+    
+    // Track answered questions
+    const answeredQuestions = new Set();
+    
+    // Function to navigate to a specific question
+    function goToQuestion(index) {
+      // Hide all questions
+      questionCards.forEach(card => card.classList.remove('active'));
+      
+      // Show the selected question
+      questionCards[index].classList.add('active');
+      
+      // Update indicators
+      indicators.forEach((indicator, i) => {
+        indicator.classList.remove('active');
+        if (i === index) {
+          indicator.classList.add('active');
+        }
+      });
+      
+      // Update current index
+      currentQuestionIndex = index;
+      
+      // Play sound effect
+      if (window.soundManager) {
+        soundManager.play('click', { volume: 0.3 });
+      }
+    }
+    
+    // Initialize answer tracking
+    document.querySelectorAll('.option input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const questionIndex = parseInt(this.closest('.question-card').getAttribute('data-question-index'));
+        answeredQuestions.add(questionIndex);
+        
+        // Update indicator to show this question was answered
+        indicators[questionIndex].classList.add('answered');
+        
+        // Play sound effect
+        if (window.soundManager) {
+          soundManager.play('click', { volume: 0.3 });
+        }
+      });
+    });
+    
+    // Next button click handler
+    nextButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const currentIndex = parseInt(this.getAttribute('data-index'));
+        goToQuestion(currentIndex + 1);
+      });
+    });
+    
+    // Previous button click handler
+    prevButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const currentIndex = parseInt(this.getAttribute('data-index'));
+        goToQuestion(currentIndex - 1);
+      });
+    });
+    
+    // Submit button click handler
+    if (submitButton) {
+      submitButton.addEventListener('click', function() {
+        // Check if all questions are answered
+        const allAnswered = Array.from(questionCards).every((card, index) => {
+          const questionId = card.querySelector('input[type="hidden"]').value;
+          const radioChecked = card.querySelector(`input[name="answer_${questionId}"]:checked`);
+          return radioChecked !== null;
+        });
+        
+        if (allAnswered) {
+          // Play completion sound before submitting
+          if (window.soundManager) {
+            soundManager.play('complete', { volume: 0.5 });
+            // Small delay to allow sound to play
+            setTimeout(() => quizForm.submit(), 500);
+          } else {
+            quizForm.submit();
+          }
+        } else {
+          // Find first unanswered question
+          let firstUnanswered = 0;
+          for (let i = 0; i < questionCards.length; i++) {
+            const questionId = questionCards[i].querySelector('input[type="hidden"]').value;
+            const radioChecked = questionCards[i].querySelector(`input[name="answer_${questionId}"]:checked`);
+            if (radioChecked === null) {
+              firstUnanswered = i;
+              break;
+            }
+          }
+          
+          // Navigate to the first unanswered question
+          goToQuestion(firstUnanswered);
+          
+          // Show alert
+          alert('Please answer all questions before submitting.');
+          
+          // Play error sound
+          if (window.soundManager) {
+            soundManager.play('incorrect', { volume: 0.5 });
+          }
+        }
+      });
+    }
+    
+    // Allow clicking on indicators to navigate
+    indicators.forEach((indicator, index) => {
+      indicator.addEventListener('click', function() {
+        goToQuestion(index);
+      });
+    });
+  });
+</script>
+{% endblock %}

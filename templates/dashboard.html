@@ -1,0 +1,776 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Python Quiz Game{% endblock %}
+
+{% block extra_head %}
+  <!-- Chart Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-container {
+    max-width: 900px;
+    padding: 2rem;
+    margin: 2rem auto;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .user-welcome {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dashboard-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .welcome-message {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    opacity: 0.9;
+  }
+  
+  .top-links {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .top-links .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .btn-icon {
+    font-size: 1.2rem;
+  }
+  
+  .dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-weight: 600;
+    position: relative;
+    padding-left: 1rem;
+  }
+  
+  .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--primary-color);
+    border-radius: 2px;
+  }
+  
+  .charts-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .chart-wrapper {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 300px;
+  }
+  
+  .chart-wrapper:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px var(--shadow-color);
+  }
+  
+  .start-quiz-section {
+    text-align: center;
+    margin-top: 2rem;
+  }
+  
+  .start-quiz-button {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    padding: 1rem 2.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(81, 81, 229, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .start-quiz-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, var(--secondary-color), var(--accent-color));
+    transition: 0.5s;
+    z-index: -1;
+  }
+  
+  .start-quiz-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(81, 81, 229, 0.4);
+  }
+  
+  .start-quiz-button:hover::before {
+    left: 0;
+  }
+  
+  .footer-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .logout-btn {
+    background: rgba(var(--danger-color-rgb), 0.1);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+  }
+  
+  .logout-btn:hover {
+    background: var(--danger-color);
+    color: white;
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+  }
+  
+  /* Table styles */
+  .table-responsive {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+  }
+  
+  .quiz-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .quiz-table th,
+  .quiz-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .quiz-table th {
+    font-weight: 600;
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    color: var(--text-color);
+  }
+  
+  .quiz-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .quiz-table tr:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+  }
+  
+  .score-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  .score-excellent {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+  }
+  
+  .score-good {
+    background-color: rgba(3, 169, 244, 0.2);
+    color: #03A9F4;
+  }
+  
+  .score-average {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+  }
+  
+  .score-poor {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+  }
+  
+  /* Leaderboard styles */
+  .leaderboard {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    margin-bottom: 2rem;
+  }
+  
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .leaderboard-table th {
+    font-weight: 600;
+    color: var(--text-color);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+  }
+  
+  .leaderboard-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .rank {
+    font-weight: 700;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+  
+  .rank-1 {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #fff;
+  }
+  
+  .rank-2 {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    color: #fff;
+  }
+  
+  .rank-3 {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    color: #fff;
+  }
+  
+  .current-user {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    font-weight: 600;
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .charts-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    .top-links {
+      align-self: flex-end;
+    }
+  }
+  
+  @media (max-width: 500px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="container dashboard-container">
+    <div class="dashboard-header">
+      <div class="user-welcome">
+        <h1 class="dashboard-title">Dashboard</h1>
+        <p class="welcome-message">Welcome, {{ current_user.username }}!</p>
+      </div>
+      <div class="top-links">
+        <a href="{{ url_for('settings') }}" class="btn">
+          <span class="btn-icon">⚙️</span> Settings
+        </a>
+        <a href="{{ url_for('about') }}" class="btn">
+          <span class="btn-icon">ℹ️</span> About
+        </a>
+      </div>
+    </div>
+    
+    <div class="dashboard-content">
+      <!-- Quick Stats Section -->
+      <div>
+        <h2 class="section-title">Quick Stats</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">{{ total_quizzes }}</div>
+            <div class="stat-label">Quizzes Taken</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ avg_score }}%</div>
+            <div class="stat-label">Average Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ highest_score }}%</div>
+            <div class="stat-label">Best Score</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Performance Charts Section -->
+      <div class="score-section">
+        <h2 class="section-title">Your Performance</h2>
+        <div class="charts-container">
+          <!-- Score History Chart -->
+          <div class="chart-wrapper">
+            <canvas id="scoreHistoryChart"></canvas>
+          </div>
+          <!-- Leaderboard Position Chart -->
+          <div class="chart-wrapper">
+            <canvas id="quizAttemptsChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quiz History Section -->
+      <div>
+        <h2 class="section-title">Quiz History</h2>
+        <div class="table-responsive">
+          <table class="quiz-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Correct/Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if quiz_history %}
+                {% for quiz in quiz_history %}
+                  <tr>
+                    <td>{{ quiz.attempt }}</td>
+                    <td>{{ quiz.date }}</td>
+                    <td>
+                      <span class="score-badge 
+                        {% if quiz.score >= 80 %}score-excellent
+                        {% elif quiz.score >= 60 %}score-good
+                        {% elif quiz.score >= 40 %}score-average
+                        {% else %}score-poor{% endif %}">
+                        {{ quiz.score }}%
+                      </span>
+                    </td>
+                    <td>{{ quiz.correct }}/{{ quiz.total }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center">No quiz history yet. Take a quiz to see your results!</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Leaderboard Section -->
+      <div>
+        <h2 class="section-title">Top Players</h2>
+        <div class="leaderboard">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>Best Score</th>
+                <th>Quizzes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if leaderboard %}
+                {% for user in leaderboard %}
+                  <tr {% if user.username == current_user.username %}class="current-user"{% endif %}>
+                    <td>
+                      <div class="rank {% if loop.index <= 3 %}rank-{{ loop.index }}{% endif %}">
+                        {{ loop.index }}
+                      </div>
+                    </td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.max_score }}%</td>
+                    <td>{{ user.quiz_count }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center">No leaderboard data available yet.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Start Quiz section -->
+    <div class="start-quiz-section">
+      <a href="{{ url_for('quiz') }}" class="btn start-quiz-button">Start New Quiz</a>
+    </div>
+    
+    <!-- Footer actions -->
+    <div class="footer-actions">
+      <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get theme from localStorage
+      var currentTheme = localStorage.getItem('theme') || 'light';
+      
+      // Set chart colors based on theme
+      var chartColors = {
+        primary: currentTheme == 'dark' ? '#6A6AFF' : '#5151E5',
+        secondary: currentTheme == 'dark' ? '#72EDF2' : '#72EDF2',
+        danger: currentTheme == 'dark' ? '#EF5350' : '#f44336',
+        success: currentTheme == 'dark' ? '#4CAF50' : '#4CAF50',
+        warning: currentTheme == 'dark' ? '#FFC107' : '#FFC107',
+        info: currentTheme == 'dark' ? '#03A9F4' : '#03A9F4',
+        background: currentTheme == 'dark' ? 'rgba(106, 106, 255, 0.2)' : 'rgba(81, 81, 229, 0.2)',
+        text: currentTheme == 'dark' ? '#f5f5f5' : '#333'
+      };
+      
+      // Set grid colors
+      var gridColor = currentTheme == 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+      
+      // Get chart contexts
+      var ctxScore = document.getElementById('scoreHistoryChart').getContext('2d');
+      var ctxAttempts = document.getElementById('quizAttemptsChart').getContext('2d');
+      
+      // Get data from Flask
+      var labels = JSON.parse('{{ labels | tojson | safe }}');
+      var scores = JSON.parse('{{ scores | tojson | safe }}');
+      
+      // Create gradient for score history chart
+      var scoreGradient = ctxScore.createLinearGradient(0, 0, 0, 400);
+      scoreGradient.addColorStop(0, chartColors.primary);
+      scoreGradient.addColorStop(1, 'rgba(81, 81, 229, 0.1)');
+      
+      // Create score history chart (line chart)
+      var scoreHistoryChart = new Chart(ctxScore, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Score %',
+            data: scores,
+            backgroundColor: scoreGradient,
+            borderColor: chartColors.primary,
+            borderWidth: 3,
+            pointBackgroundColor: chartColors.secondary,
+            pointBorderColor: chartColors.primary,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Quiz Score History',
+              color: chartColors.text,
+              font: {
+                size: 16,
+                weight: 'bold'
+              }
+            },
+            legend: {
+              display: false
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: currentTheme == 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)',
+              titleColor: chartColors.text,
+              bodyColor: chartColors.text,
+              borderColor: chartColors.primary,
+              borderWidth: 1,
+              padding: 10,
+              callbacks: {
+                label: function(context) {
+                  return 'Score: ' + context.raw + '%';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                color: chartColors.text,
+                stepSize: 20
+              },
+              grid: {
+                color: gridColor
+              },
+              title: {
+                display: true,
+                text: 'Score (%)',
+                color: chartColors.text
+              }
+            },
+            x: {
+              ticks: {
+                color: chartColors.text,
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                display: false
+              },
+              title: {
+                display: true,
+                text: 'Quiz Date',
+                color: chartColors.text
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          elements: {
+            line: {
+              tension: 0.4
+            }
+          }
+        }
+      });
+      
+      // Create attempt count chart (bar chart)
+      var quizAttemptsChart = new Chart(ctxAttempts, {
+        type: 'bar',
+        data: {
+          labels: ['Attempts'],
+          datasets: [{
+            label: 'Total Quizzes',
+            data: [{{ total_quizzes }}],
+            backgroundColor: chartColors.primary,
+            borderColor: chartColors.primary,
+            borderWidth: 0,
+            borderRadius: 6,
+            barPercentage: 0.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            title: {
+              display: true,
+              text: 'Quiz Attempts',
+              color: chartColors.text,
+              font: {
+                size: 16,
+                weight: 'bold'
+              }
+            },
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: currentTheme == 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)',
+              titleColor: chartColors.text,
+              bodyColor: chartColors.text,
+              borderColor: chartColors.primary,
+              borderWidth: 1,
+              padding: 10,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  return 'Total Attempts: ' + context.raw;
+                }
+              }
+            },
+            datalabels: {
+              color: '#fff',
+              font: {
+                weight: 'bold'
+              },
+              formatter: function(value) {
+                return value;
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: chartColors.text
+              }
+            },
+            x: {
+              beginAtZero: true,
+              max: Math.max({{ total_quizzes }} * 1.2, 5),
+              grid: {
+                color: gridColor
+              },
+              ticks: {
+                color: chartColors.text,
+                stepSize: 1
+              },
+              title: {
+                display: true,
+                text: 'Number of Quizzes',
+                color: chartColors.text
+              }
+            }
+          }
+        }
+      });
+      
+      // Update charts when theme changes
+      document.getElementById('themeToggle').addEventListener('click', function() {
+        setTimeout(function() {
+          var newTheme = localStorage.getItem('theme') || 'light';
+          
+          // Update chart colors
+          var newChartColors = {
+            primary: newTheme == 'dark' ? '#6A6AFF' : '#5151E5',
+            secondary: newTheme == 'dark' ? '#72EDF2' : '#72EDF2',
+            danger: newTheme == 'dark' ? '#EF5350' : '#f44336',
+            success: newTheme == 'dark' ? '#4CAF50' : '#4CAF50',
+            warning: newTheme == 'dark' ? '#FFC107' : '#FFC107',
+            info: newTheme == 'dark' ? '#03A9F4' : '#03A9F4',
+            background: newTheme == 'dark' ? 'rgba(106, 106, 255, 0.2)' : 'rgba(81, 81, 229, 0.2)',
+            text: newTheme == 'dark' ? '#f5f5f5' : '#333'
+          };
+          
+          // Set new grid color
+          var newGridColor = newTheme == 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+          
+          // Update score history chart
+          var newScoreGradient = ctxScore.createLinearGradient(0, 0, 0, 400);
+          newScoreGradient.addColorStop(0, newChartColors.primary);
+          newScoreGradient.addColorStop(1, 'rgba(81, 81, 229, 0.1)');
+          
+          scoreHistoryChart.data.datasets[0].backgroundColor = newScoreGradient;
+          scoreHistoryChart.data.datasets[0].borderColor = newChartColors.primary;
+          scoreHistoryChart.data.datasets[0].pointBackgroundColor = newChartColors.secondary;
+          scoreHistoryChart.data.datasets[0].pointBorderColor = newChartColors.primary;
+          
+          scoreHistoryChart.options.plugins.title.color = newChartColors.text;
+          scoreHistoryChart.options.scales.y.ticks.color = newChartColors.text;
+          scoreHistoryChart.options.scales.x.ticks.color = newChartColors.text;
+          scoreHistoryChart.options.scales.y.title.color = newChartColors.text;
+          scoreHistoryChart.options.scales.x.title.color = newChartColors.text;
+          scoreHistoryChart.options.scales.y.grid.color = newGridColor;
+          scoreHistoryChart.options.scales.x.grid.color = newGridColor;
+          
+          // Update attempts chart
+          quizAttemptsChart.data.datasets[0].backgroundColor = newChartColors.primary;
+          quizAttemptsChart.data.datasets[0].borderColor = newChartColors.primary;
+          
+          quizAttemptsChart.options.plugins.title.color = newChartColors.text;
+          quizAttemptsChart.options.scales.y.ticks.color = newChartColors.text;
+          quizAttemptsChart.options.scales.x.ticks.color = newChartColors.text;
+          quizAttemptsChart.options.scales.x.title.color = newChartColors.text;
+          quizAttemptsChart.options.scales.x.grid.color = newGridColor;
+          
+          // Update charts
+          scoreHistoryChart.update();
+          quizAttemptsChart.update();
+        }, 50);
+      });
+    });
+  </script>
+{% endblock %}

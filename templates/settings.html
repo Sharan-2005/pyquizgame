@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+{% block title %}Settings - Python Quiz Game{% endblock %}
+
+{% block extra_css %}
+<style>
+  .settings-container {
+    max-width: 700px;
+    margin: 4rem auto;
+    padding: 2.5rem;
+    border-radius: 15px;
+    background: var(--card-bg);
+    box-shadow: 0 10px 30px var(--shadow-color);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .settings-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  }
+  
+  .settings-header {
+    margin-bottom: 2.5rem;
+    text-align: center;
+    position: relative;
+  }
+  
+  .settings-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  
+  .settings-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+  }
+  
+  .settings-form {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .form-group {
+    margin-bottom: 1.8rem;
+    position: relative;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+  }
+  
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-color-20);
+    outline: none;
+  }
+  
+  .form-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  .settings-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .settings-section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  
+  .btn-update {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 50px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+  
+  .btn-update:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+  }
+  
+  .btn-update:active {
+    transform: translateY(-1px);
+  }
+  
+  .btn-cancel {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+  
+  .btn-cancel:hover {
+    background: var(--card-bg-accent);
+    border-color: var(--text-secondary);
+  }
+  
+  .flash-container {
+    margin-bottom: 2rem;
+  }
+  
+  .flash {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+  
+  .flash-success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border-left: 4px solid var(--success-border);
+  }
+  
+  .flash-error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border-left: 4px solid var(--error-border);
+  }
+  
+  /* Animated background */
+  .bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary-color-10), var(--accent-color-10));
+    filter: blur(60px);
+    z-index: -1;
+  }
+  
+  .bg-shape-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -100px;
+  }
+  
+  .bg-shape-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -50px;
+    left: -50px;
+  }
+  
+  /* Toggle button styling */
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .toggle-label {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+  
+  .toggle-status {
+    margin-left: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+  
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .toggle-slider {
+    background-color: var(--primary-color);
+  }
+  
+  input:focus + .toggle-slider {
+    box-shadow: 0 0 1px var(--primary-color);
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+  }
+  
+  /* Media queries */
+  @media (max-width: 768px) {
+    .settings-container {
+      margin: 2rem 1rem;
+      padding: 1.5rem;
+    }
+    
+    .settings-title {
+      font-size: 2rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+  
+  <div class="settings-header">
+    <h1 class="settings-title">Account Settings</h1>
+    <p class="settings-subtitle">Manage your profile and preferences</p>
+  </div>
+  
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+  
+  <div class="settings-form">
+    <div class="settings-section">
+      <h2 class="settings-section-title">Profile Information</h2>
+      <form method="POST" action="{{ url_for('settings') }}">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+          <small class="form-text">This is the name displayed to other users</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email if current_user.email else '' }}" placeholder="Enter your email address">
+          <small class="form-text">We'll never share your email with anyone else</small>
+        </div>
+        
+        <button type="submit" name="update_profile" class="btn-update">Update Profile</button>
+      </form>
+    </div>
+    
+    <div class="settings-section">
+      <h2 class="settings-section-title">Change Password</h2>
+      <form method="POST" action="{{ url_for('settings') }}">
+        <div class="form-group">
+          <label for="current_password">Current Password</label>
+          <input type="password" class="form-control" id="current_password" name="current_password" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="new_password">New Password</label>
+          <input type="password" class="form-control" id="new_password" name="new_password" required minlength="8">
+          <small class="form-text">Password must be at least 8 characters long</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirm_password">Confirm New Password</label>
+          <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+        </div>
+        
+        <button type="submit" name="update_password" class="btn-update">Change Password</button>
+      </form>
+    </div>
+    
+    <div class="settings-section">
+      <h2 class="settings-section-title">Quiz Preferences</h2>
+      <form method="POST" action="{{ url_for('settings') }}">
+        <div class="toggle-container">
+          <span class="toggle-label">Show Timer</span>
+          <label class="toggle-switch">
+            <input type="checkbox" name="show_timer" {% if current_user.show_timer %}checked{% endif %}>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-status">{% if current_user.show_timer %}Enabled{% else %}Disabled{% endif %}</span>
+        </div>
+        
+        <div class="toggle-container">
+          <span class="toggle-label">Sound Effects</span>
+          <label class="toggle-switch">
+            <input type="checkbox" name="sound_effects" {% if current_user.sound_effects %}checked{% endif %}>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-status">{% if current_user.sound_effects %}Enabled{% else %}Disabled{% endif %}</span>
+        </div>
+        
+        <div class="form-group">
+          <label for="difficulty">Default Difficulty</label>
+          <select class="form-control" id="difficulty" name="difficulty">
+            <option value="easy" {% if current_user.default_difficulty == 'easy' %}selected{% endif %}>Easy</option>
+            <option value="medium" {% if current_user.default_difficulty == 'medium' or not current_user.default_difficulty %}selected{% endif %}>Medium</option>
+            <option value="hard" {% if current_user.default_difficulty == 'hard' %}selected{% endif %}>Hard</option>
+          </select>
+        </div>
+        
+        <button type="submit" name="update_preferences" class="btn-update">Save Preferences</button>
+      </form>
+    </div>
+    
+    <a href="{{ url_for('dashboard') }}" class="btn-cancel">Back to Dashboard</a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}
